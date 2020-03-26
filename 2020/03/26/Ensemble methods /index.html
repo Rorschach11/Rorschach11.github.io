@@ -393,34 +393,44 @@
         <!--<div class="toc-entry-content"><!-- 套嵌目录使用（主要为了支援评论）-->
         
         <div class="entry-content">
-          <h1 id="Ensemble-methods"><a href="#Ensemble-methods" class="headerlink" title="Ensemble methods"></a>Ensemble methods</h1><ul>
-<li><h3 id="Main-Idea"><a href="#Main-Idea" class="headerlink" title="Main Idea"></a>Main Idea</h3></li>
-</ul>
-<p>​       Multiple models (aka “weak learners”) are trained to solve the same problem and combined to get better results. </p>
-<ul>
-<li><h3 id="How-to-combine"><a href="#How-to-combine" class="headerlink" title="How to combine?"></a>How to combine?</h3><ol>
-<li>Train different models independently and take a average of all models  - ==<strong>Bagging</strong>== (such as random forest)</li>
-<li>Train a base model first. And we train next model to make up for the disadvantage of the previous model, which is adaptive. - ==<strong>Boosting</strong>==</li>
+          <h1 id="Ensemble-methods"><a href="#Ensemble-methods" class="headerlink" title="Ensemble methods"></a>Ensemble methods</h1><h3 id="Main-Idea"><a href="#Main-Idea" class="headerlink" title="Main Idea"></a>Main Idea</h3><p>​       Multiple models (aka “weak learners”) are trained to solve the same problem and combined to get better results. </p>
+<h3 id="How-to-combine"><a href="#How-to-combine" class="headerlink" title="How to combine?"></a>How to combine?</h3><ol>
+<li>Train different models independently and take a average of all models  - <strong>Bagging</strong> (such as random forest)</li>
+<li>Train a base model first. And we train next model to make up for the disadvantage of the previous model, which is adaptive. - <strong>Boosting</strong></li>
 </ol>
-</li>
-</ul>
 <h1 id="Boosting"><a href="#Boosting" class="headerlink" title="Boosting"></a>Boosting</h1><p>The main idea of the boosting is to combine a set of models with low variance but high bias to reduce the bias and get a strong one.( The bagging do the different. ) Boosting <strong>mainly focused at reducing bias</strong>.</p>
 <img src="/Users/rorschach/Study/HF/project/1.png" style="zoom:30%;" />
 
 <p>Boosting is a <strong>sequential methods</strong>, we fit the models <strong>iteratively</strong> and at each step we hope to train a new model which can improve our pervious model.</p>
-<ul>
-<li><h3 id="How-we-sequentially-fit-the-model"><a href="#How-we-sequentially-fit-the-model" class="headerlink" title="How we sequentially fit the model?"></a>How we sequentially fit the model?</h3><ol>
+<h3 id="How-we-sequentially-fit-the-model"><a href="#How-we-sequentially-fit-the-model" class="headerlink" title="How we sequentially fit the model?"></a>How we sequentially fit the model?</h3><ol>
 <li><strong>Adaptive boosting</strong> updates the weights attached to each of the training dataset observations.</li>
 <li><strong>Gradient boosting</strong> updates the value of these observations.(The loss function)</li>
 </ol>
-</li>
-</ul>
 <h1 id="Gradient-boosting"><a href="#Gradient-boosting" class="headerlink" title="Gradient boosting"></a>Gradient boosting</h1><p>The main goal of the Gradient boosting is to find an approximation $\hat{F}(x)$ to a function $F(x)$ that minimizes the expected value of a specified loss function $L(y, F(x))$:</p>
 <p>​                                                                      $ {\hat {F}}={\underset {F}{\arg \min }},\mathbb {E} _{x,y}[L(y,F(x))]$</p>
 <p>Our final model $\hat{F}(x)$ is a combination of many base model (aka weak learner), and it can be represented a weighted sum of these base model. It’s formula is as following:</p>
 <p>​                                                                      $ {\hat {F}}(x)=\sum <em>{i=1}^{M}\gamma _{i}h</em>{i}(x)+{\mbox{const}}$</p>
 <p>Where $h_i(x)$ is the base model.</p>
+<h4 id="Review-the-Gradient-descent"><a href="#Review-the-Gradient-descent" class="headerlink" title="Review the Gradient descent"></a>Review the Gradient descent</h4><p>​                                                                               $w_{i+1} = w_i - \lambda \frac{\partial\cal{L(w)}}{\partial w}$</p>
+<p>In the Gradient boosting, we consider the $F(x)$ as the parameter, then we can update the our model as:</p>
+<p>​                                                                  $F_m(x) = F_{m-1}(x) - \gamma_m \frac{\partial L(y, F_{m-1}(x))}{F_{m-1}(x)}$</p>
+<p>Since for an arbitrary loss function $L(x)$ , it is infeasible to solve such a optimization problem. We use a base learner $h(x)$ to fit negative gradient of each step, then we can update the model as follow:</p>
+<p>​                                                                            $h_m(x) \approx -\frac{\partial L(y, F_{m-1}(x))}{F_{m-1}(x)}$</p>
+<p>​                                                                      $F_m(x) = F_{m-1}(x) + \gamma_m h_m(x)$ </p>
+<p>Where the $\gamma_m$ is the step length. </p>
+<p>At each iteration, we first fit a base model $h_m(x)$ to the negative gradient and we hope to set a proper step length $\gamma_m$ to reduce the loss function $L(y, F(x))$.</p>
+<p>​                                                        $\gamma <em>{m}={\underset {\gamma }{\arg \min }}{\sum _{i=1}^{n}{L\left(y</em>{i},F_{m-1}(x_{i})+\gamma h_m(x)\right)}}$</p>
+<p>However this is a <em>heuristic</em> method, for the complex loss function we can get the exact result.  To optimize this problem, we can use the <strong>line search</strong> strategy or simplify the loss fuction to get an approximate result .</p>
+<p>The detail Algorithm as follow:</p>
 <img src="/Users/rorschach/Study/HF/project/2.png" style="zoom:40%;" />
+
+<h1 id="GBDT"><a href="#GBDT" class="headerlink" title="GBDT"></a>GBDT</h1><p>As the name indicates, GBDT is a Gradient boosting algorithm which set Decision Tree as the base learner. </p>
+<p>==NOTE:== for both GBDT classification and regression, we use the regression tree since we the residual is continuous.</p>
+<h4 id="Loss-Function"><a href="#Loss-Function" class="headerlink" title="Loss Function"></a>Loss Function</h4><p>  <strong>Logistic loss</strong>   —–for classification</p>
+<p>   $L(y, f(x)) = -\sum_{k=1}^K y_k \log p_k(x) $ , $p_k(x)$ is the probability of $x$ belongs to the $k$ class.</p>
+<p>  <strong>MeanSquare loss</strong> ——for regression </p>
+<p>  $L(y, f(x)) = (y-f(x))^2$ </p>
+
         </div>
         <!-- .entry-content -->
         <div class="single-reward">
